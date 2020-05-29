@@ -1,2 +1,19 @@
-# fuel-api-finland-serverless
-The serverless API to show prices for the fuel in Finland.
+## Fuel API Finland Serverless
+
+Used Technologies
+
+- Typescript
+- Serverless
+- AWS
+- Cheerio
+
+How to start
+
+1. Make sure you have aws-cli installed
+2. Make sure you have serverless npm -g serverless
+3. Setup profile with admin rights on AWS
+4. Just run sls deploy
+
+Endpoints
+
+- https://{random-something}.execute-api.eu-west-1.amazonaws.com/dev/fuel-api/locations
