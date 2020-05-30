@@ -1,11 +1,15 @@
+org: igrsrk
+app: fuel-api-finland-serverless-app
 service: fuel-api-finland-serverless
 
-# frameworkVersion: ">=1.1.0 <2.0.0"
+plugins:
+  - serverless-plugin-typescript
 
 provider:
   name: aws
   runtime: nodejs12.x
   region: eu-west-2
+  logRetentionInDays: 3
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
   iamRoleStatements:
@@ -17,11 +21,11 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+      Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
 
 functions:
   getLocations:
-    handler: src/handler.getLocations
+    handler: handler.getLocations
     events:
       - http:
           path: fuel-api/locations
@@ -30,7 +34,7 @@ functions:
 resources:
   Resources:
     TodosDynamoDbTable:
-      Type: "AWS::DynamoDB::Table"
+      Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:

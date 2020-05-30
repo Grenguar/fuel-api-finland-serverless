@@ -12,17 +12,17 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.51",
     "@types/aws-sdk": "0.0.42",
     "@types/axios": "^0.14.0",
     "@types/cheerio": "^0.22.18",
     "@types/node": "^7.0.5",
-    "tslint": "^5.5.0",
+    "aws-sdk": "^2.686.0",
+    "serverless-plugin-typescript": "^1.1.9",
+    "tslint": "^6.1.2",
     "tslint-config-standard": "^6.0.1",
-    "typescript": "^2.4.2"
+    "typescript": "^3.9.3"
   },
   "dependencies": {
-    "aws-lambda": "^1.0.6",
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
     "uuid": "^3.1.0"

@@ -1,4 +1,4 @@
-## Fuel API Finland Serverless
+# Fuel API Finland Serverless
 
 Used Technologies
 
@@ -13,7 +13,3 @@ How to start
 2. Make sure you have serverless npm -g serverless
 3. Setup profile with admin rights on AWS
 4. Just run sls deploy
-
-Endpoints
-
-- https://{random-something}.execute-api.eu-west-1.amazonaws.com/dev/fuel-api/locations
