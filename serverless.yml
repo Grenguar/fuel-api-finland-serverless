@@ -30,6 +30,16 @@ functions:
       - http:
           path: fuel-api/locations
           method: get
+  getLocationPrices:
+    handler: handler.getLocationPrices
+    events:
+      - http:
+          path: fuel-api/location/{name}
+          method: get
+          request:
+            parameters:
+              paths:
+                name: true
 
 resources:
   Resources:

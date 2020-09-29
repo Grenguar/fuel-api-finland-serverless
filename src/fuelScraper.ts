@@ -1,29 +1,38 @@
-import * as cheerio from 'cheerio'
-import axios from 'axios'
+import * as cheerio from 'cheerio';
+import axios from 'axios';
 
 export class FuelScraper {
-  url: string
+  url: string;
 
   constructor(url: string) {
-    this.url = url
+    this.url = url;
   }
 
-  public async getCityNames(): Promise<CityLocations> {
-    const citiesList: string[] = []
-    const response = await axios.get(this.url)
-    const cheerioStatic: CheerioStatic = cheerio.load(response.data as string)
+  public async getLocationNames(): Promise<CityLocations> {
+    const locations: string[] = [];
+    const response = await axios.get(this.url);
+    const cheerioStatic: cheerio.Root = cheerio.load(response.data as string);
     cheerioStatic('select')
       .find('option')
-      .map(function (_index: number, element: CheerioElement) {
-        let cityName: string = element.attribs['value']
-        if (cityName !== undefined) {
-          citiesList.push(cityName)
+      .map((_index: number, element: cheerio.Element) => {
+        let location: string = element.attribs['value'];
+        if (this.isValidLocation(location)) {
+          locations.push(location);
         }
-      })
-    return { locations: citiesList }
+      });
+    return { locations };
+  }
+
+  private isValidLocation(loc: string): boolean {
+    if (loc === undefined) {
+      return false;
+    } else {
+      const regExpWay = /[\w-]*tie[\w-]*/g;
+      return !regExpWay.test(loc);
+    }
   }
 }
 
 export interface CityLocations {
-  locations: string[]
+  locations: string[];
 }
