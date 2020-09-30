@@ -1,32 +1,23 @@
 name: On Push
 
-# Run this workflow every time a new commit pushed to your repository
 on: push
 
 jobs:
-  # Set the job key. The key is displayed as the job name
-  # when a job name is not provided
   deploy-on-push:
     # Name the Job
     name: The code deployed to aws
-    # Set the type of machine to run on
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [12.x]
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Installing serverless
-        run: npm install -g serverless
-      - name: Installing dependencies
+      - uses: actions/checkout@v1
+
+      - name: yarn install dependencies
         run: yarn --frozen-lockfile
-      - name: Serverless AWS authentication
-        run: sls config credentials --provider aws --key ${{ secrets.AWS_ACCESS_KEY_ID }} --secret ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Serverless deploy
-        run: sls deploy --s stage
+
+      - name: Serverless
+        uses: serverless/github-action@e17abe72d4969e86cb53576ade34e95c40362f0e
+        with:
+          args: deploy
