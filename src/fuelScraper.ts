@@ -59,11 +59,18 @@ export class FuelScraper {
     currentYear: number
   ): StationData {
     const currentRow = cheerioStatic(element);
-    const updated = `${currentRow.find('.PvmTD').text()}${currentYear}`;
+    const rawDate = currentRow.find('.PvmTD');
+    const updated = `${rawDate.text()}${currentYear}`;
     const linkObj = currentRow.find('td > a');
-    const link = linkObj.attr('href');
+    let link = linkObj.attr('href');
+    let station = '-';
+    if (link) {
+      station = linkObj[0].next.data;
+    } else {
+      station = currentRow.find('td')[0].children[0].data;
+      link = '-';
+    }
     const id = this.getStationId(link);
-    const station = linkObj[0].next.data;
     const allPricesEL = currentRow.find('.Hinnat');
     const ninetyFive = allPricesEL[0].children[0].data;
     const ninetyEight = allPricesEL[1].children[0].data;
@@ -85,11 +92,11 @@ export class FuelScraper {
   }
 
   private isValidLocation(loc: string): boolean {
-    if (loc === undefined) {
-      return false;
-    } else {
+    if (loc) {
       const regExpWay = /[\w-]*tie[\w-]*/g;
       return !regExpWay.test(loc);
+    } else {
+      return false;
     }
   }
 }
