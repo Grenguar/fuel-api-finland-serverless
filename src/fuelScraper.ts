@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { CityLocations } from './model/cityLocations';
 import { LocationStations, StationData } from './model/station';
 
@@ -15,12 +15,18 @@ export class FuelScraper {
    */
   public async getLocationNames(): Promise<CityLocations> {
     const locations: string[] = [];
-    const response = await axios.get(this.url);
-    const cheerioStatic: cheerio.Root = cheerio.load(response.data as string);
+    const response = await axios.request({
+      method: 'GET',
+      url: this.url,
+      responseType: 'arraybuffer',
+      reponseEncoding: 'binary' // this key is missing from typescript definitions
+    } as object);
+    const decodedHtmlBody = response.data.toString('latin1');
+    const cheerioStatic: cheerio.Root = cheerio.load(decodedHtmlBody);
     cheerioStatic('select')
       .find('option')
       .map((_index: number, element: cheerio.Element) => {
-        let location: string = element.attribs['value'];
+        let location: string = element.children[0].data;
         if (this.isValidLocation(location)) {
           locations.push(location);
         }
@@ -36,9 +42,14 @@ export class FuelScraper {
     location: string
   ): Promise<LocationStations> {
     const url = `${this.url}/${location}`;
-    const res = await axios.get(url);
-    const htmlBody = res.data;
-    const cheerioStatic = cheerio.load(htmlBody);
+    const response = await axios.request({
+      method: 'GET',
+      url,
+      responseType: 'arraybuffer',
+      reponseEncoding: 'binary' // this key is missing from typescript definitions
+    } as object);
+    const decodedHtmlBody = response.data.toString('latin1');
+    const cheerioStatic = cheerio.load(decodedHtmlBody);
     const priceTable = cheerioStatic('#Hinnat').find('.e10');
     const stationsRows = priceTable.find('.E10');
     const currentYear = new Date().getFullYear();
@@ -70,6 +81,7 @@ export class FuelScraper {
       station = currentRow.find('td')[0].children[0].data;
       link = '-';
     }
+    station = station.replace('(', '');
     const id = this.getStationId(link);
     const allPricesEL = currentRow.find('.Hinnat');
     const ninetyFive = allPricesEL[0].children[0].data;
