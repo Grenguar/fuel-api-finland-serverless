@@ -23,6 +23,7 @@ const getLocations = async (event: any, context: any, callback: any) => {
 };
 
 const getLocationPrices = async (event: any, _context: any, callback: any) => {
+  console.log('event: ', event);
   const locationName = event.pathParameters.name;
   const stationsForLocation = await fuelScraper.getGasStationsForLocation(
     locationName

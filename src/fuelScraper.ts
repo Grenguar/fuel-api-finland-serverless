@@ -41,7 +41,8 @@ export class FuelScraper {
   public async getGasStationsForLocation(
     location: string
   ): Promise<LocationStations> {
-    const url = `${this.url}/${location}`;
+    const decodedLocation = decodeURIComponent(location);
+    const url = `${this.url}/${decodedLocation}`;
     const response = await axios.request({
       method: 'GET',
       url,
@@ -59,7 +60,7 @@ export class FuelScraper {
       stations.push(station);
     });
     return {
-      location,
+      location: decodedLocation,
       stations
     };
   }
@@ -73,15 +74,7 @@ export class FuelScraper {
     const rawDate = currentRow.find('.PvmTD');
     const updated = `${rawDate.text()}${currentYear}`;
     const linkObj = currentRow.find('td > a');
-    let link = linkObj.attr('href');
-    let station = '-';
-    if (link) {
-      station = linkObj[0].next.data;
-    } else {
-      station = currentRow.find('td')[0].children[0].data;
-      link = '-';
-    }
-    station = station.replace('(', '');
+    let { station, link } = this.parseStationWithLink(linkObj, currentRow);
     const id = this.getStationId(link);
     const allPricesEL = currentRow.find('.Hinnat');
     const ninetyFive = allPricesEL[0].children[0].data;
@@ -103,9 +96,24 @@ export class FuelScraper {
     return typeof mapLink === 'undefined' ? '-' : mapLink.split('id=')[1];
   }
 
+  private parseStationWithLink(
+    linkObj: cheerio.Cheerio,
+    currentRow: cheerio.Cheerio
+  ) {
+    let link = linkObj.attr('href');
+    let station = '-';
+    if (link) {
+      station = linkObj[0].next.data.replace('(', '');
+    } else {
+      station = currentRow.find('td')[0].children[0].data;
+      link = '-';
+    }
+    return { station, link };
+  }
+
   private isValidLocation(loc: string): boolean {
     if (loc) {
-      const regExpWay = /[\w-]*tie[\w-]*/g;
+      const regExpWay = /[\w-]*[Tt]ie[\w-]*/g;
       return !regExpWay.test(loc);
     } else {
       return false;
