@@ -23,9 +23,9 @@ export class FuelScraper {
     } as object);
     const decodedHtmlBody = response.data.toString('latin1');
     const cheerioStatic: cheerio.Root = cheerio.load(decodedHtmlBody);
-    cheerioStatic('select')
+    cheerioStatic('select[name=kaupunki]')
       .find('option')
-      .map((_index: number, element: cheerio.Element) => {
+      .each((_index: number, element: cheerio.Element) => {
         let location: string = element.children[0].data;
         if (this.isValidLocation(location)) {
           locations.push(location);
