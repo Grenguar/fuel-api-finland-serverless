@@ -1,11 +1,14 @@
+import { SimpleCoordinates } from './simpleCoords';
+
 export interface StationData {
-  id: string;
+  id?: string | number;
   station: string;
-  updated: string;
-  link: string;
+  updated?: string;
+  link?: string;
   ninetyFive: string;
   ninetyEight: string;
   diesel: string;
+  coordinates?: SimpleCoordinates;
 }
 
 export interface LocationStations {
