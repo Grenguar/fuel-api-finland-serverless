@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import axios, { AxiosResponse } from 'axios';
 import { CityLocations } from './model/cityLocations';
 import { LocationStations, StationData } from './model/station';
+import { SimpleCoordinates } from './model/simpleCoords';
 
 export class FuelScraper {
   readonly url: string;
@@ -38,9 +39,7 @@ export class FuelScraper {
    * Returns all stations and prices for location
    * @param location location from the response of getLocationNames
    */
-  public async getGasStationsForLocation(
-    location: string
-  ): Promise<LocationStations> {
+  public async getGasStationsForLocation(location: string): Promise<LocationStations> {
     const decodedLocation = decodeURIComponent(location);
     const url = `${this.url}/${decodedLocation}`;
     const response = await axios.request({
@@ -55,8 +54,15 @@ export class FuelScraper {
     const stationsRows = priceTable.find('.E10');
     const currentYear = new Date().getFullYear();
     const stations = [];
+    const stationsWithoutCoords = [];
+    const stationsMapForCoords = new Map<number, StationData>();
     stationsRows.each((_i: number, element: cheerio.Element) => {
       const station = this.parseStationRow(cheerioStatic, element, currentYear);
+      if (typeof station.id === 'number') {
+        stationsMapForCoords.set(station.id, station);
+      } else {
+        stationsWithoutCoords.push(station);
+      }
       stations.push(station);
     });
     return {
@@ -65,11 +71,7 @@ export class FuelScraper {
     };
   }
 
-  private parseStationRow(
-    cheerioStatic: cheerio.Root,
-    element: cheerio.Element,
-    currentYear: number
-  ): StationData {
+  private parseStationRow(cheerioStatic: cheerio.Root, element: cheerio.Element, currentYear: number): StationData {
     const currentRow = cheerioStatic(element);
     const rawDate = currentRow.find('.PvmTD');
     const updated = `${rawDate.text()}${currentYear}`;
@@ -92,14 +94,19 @@ export class FuelScraper {
     return st;
   }
 
-  private getStationId(mapLink: string): string {
-    return typeof mapLink === 'undefined' ? '-' : mapLink.split('id=')[1];
+  private async updateStationsWithCoordinates(stationsMap: Map<number, StationData>): Promise<StationData[]> {
+    const updatedMap = stationsMap;
+    const stationLinks = [...stationsMap.values()].map((st) => st.link.toString());
+    const promises = stationLinks.map((link) => this.getCoordinatesFromMap(link));
+    const updatedStations = await Promise.all(promises);
+    return [...updatedMap.values()];
   }
 
-  private parseStationWithLink(
-    linkObj: cheerio.Cheerio,
-    currentRow: cheerio.Cheerio
-  ) {
+  private getStationId(mapLink: string): string | number {
+    return typeof mapLink === 'undefined' ? '-' : Number(mapLink.split('id=')[1]);
+  }
+
+  private parseStationWithLink(linkObj: cheerio.Cheerio, currentRow: cheerio.Cheerio) {
     let link = linkObj.attr('href');
     let station = '-';
     if (link) {
@@ -118,5 +125,24 @@ export class FuelScraper {
     } else {
       return false;
     }
+  }
+
+  private async getCoordinatesFromMap(mapLink: string): Promise<SimpleCoordinates> {
+    const response = await axios.request({
+      method: 'GET',
+      url: `${this.url}/${mapLink}`,
+      responseType: 'text'
+    });
+    const cheerioStatic: cheerio.Root = cheerio.load(response.data);
+    const jsObject = cheerioStatic('.centerCol').find('script').attr('type', 'text/javascript');
+    const scriptText = jsObject[3].children[0].data;
+    const coordsArray = scriptText
+      .split(/google.maps.LatLng/)[1]
+      .match(/\(([^)]+)\)/)[1]
+      .split(', ');
+    return {
+      latitude: coordsArray[0],
+      longitude: coordsArray[1]
+    };
   }
 }
