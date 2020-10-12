@@ -1,7 +1,7 @@
 import { SimpleCoordinates } from './simpleCoords';
 
 export interface StationData {
-  id?: string | number;
+  id?: string;
   station: string;
   updated?: string;
   link?: string;

@@ -54,15 +54,8 @@ export class FuelScraper {
     const stationsRows = priceTable.find('.E10');
     const currentYear = new Date().getFullYear();
     const stations = [];
-    const stationsWithoutCoords = [];
-    const stationsMapForCoords = new Map<number, StationData>();
     stationsRows.each((_i: number, element: cheerio.Element) => {
       const station = this.parseStationRow(cheerioStatic, element, currentYear);
-      if (typeof station.id === 'number') {
-        stationsMapForCoords.set(station.id, station);
-      } else {
-        stationsWithoutCoords.push(station);
-      }
       stations.push(station);
     });
     return {
@@ -102,15 +95,15 @@ export class FuelScraper {
     return [...updatedMap.values()];
   }
 
-  private getStationId(mapLink: string): string | number {
-    return typeof mapLink === 'undefined' ? '-' : Number(mapLink.split('id=')[1]);
+  private getStationId(mapLink: string): string {
+    return typeof mapLink === 'undefined' ? '-' : mapLink.split('id=')[1];
   }
 
   private parseStationWithLink(linkObj: cheerio.Cheerio, currentRow: cheerio.Cheerio) {
     let link = linkObj.attr('href');
     let station = '-';
     if (link) {
-      station = linkObj[0].next.data.replace('(', '');
+      station = linkObj[0].next.data.replace('(', '').trim();
     } else {
       station = currentRow.find('td')[0].children[0].data;
       link = '-';
@@ -141,6 +134,7 @@ export class FuelScraper {
       .match(/\(([^)]+)\)/)[1]
       .split(', ');
     return {
+      id: '',
       latitude: coordsArray[0],
       longitude: coordsArray[1]
     };

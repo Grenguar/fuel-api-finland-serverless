@@ -23,12 +23,8 @@ const getLocations = async (event: any, context: any, callback: any) => {
 };
 
 const getLocationPrices = async (event: any, _context: any, callback: any) => {
-  console.log('event: ', event);
   const locationName = event.pathParameters.name;
-  const stationsForLocation = await fuelScraper.getGasStationsForLocation(
-    locationName
-  );
-  console.log(stationsForLocation);
+  const stationsForLocation = await fuelScraper.getGasStationsForLocation(locationName);
   const response: LambdaResponse = {
     statusCode: 200,
     body: JSON.stringify(stationsForLocation)

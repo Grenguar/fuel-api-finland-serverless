@@ -4,5 +4,5 @@
     "module": "commonjs"
   },
   "exclude": ["node_modules"],
-  "types": ["node", "aws-sdk", "cheerio"]
+  "types": ["node", "aws-sdk", "cheerio", "jest"]
 }
