@@ -1,5 +1,4 @@
 import { FuelScraper } from '../fuelScraper';
-import axios from 'axios';
 import * as moxios from 'moxios';
 import { readFileSync } from 'fs';
 import path = require('path');
@@ -35,6 +34,7 @@ describe('FuelScraper tests', () => {
       status: 200,
       responseText: imatraPage
     });
+    // adding fixtures of links... to start testing get coords
     const stations = await fuelScraper.getGasStationsForLocation('Imatra');
     expect(stations.stations.length).toBe(3);
   });

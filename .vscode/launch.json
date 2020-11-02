@@ -10,6 +10,15 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "disableOptimisticBPs": true
+    },
+    {
+      "type": "node",
+      "name": "Debug getLocations",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/sls",
+      "args": ["invoke", "local", "-f", "getLocations", "--data", "{}"],
+      "preLaunchTask": "tsc: build - tsconfig.test.json",
+      "outFiles": ["${workspaceFolder}/.build/**/*.js"]
     }
   ]
 }
