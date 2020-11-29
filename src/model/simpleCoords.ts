@@ -1,5 +1,5 @@
 export interface SimpleCoordinates {
-  id: string;
+  id?: string;
   latitude: string;
   longitude: string;
 }

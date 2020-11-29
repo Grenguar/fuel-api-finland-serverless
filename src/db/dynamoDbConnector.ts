@@ -1,5 +1,5 @@
 import { DynamoDB } from 'aws-sdk';
-import { DocumentClient, GetItemOutput } from 'aws-sdk/clients/dynamodb';
+import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { StationData } from '../model/station';
 
 export default class DynamoDbConnector {
@@ -13,7 +13,7 @@ export default class DynamoDbConnector {
   }
 
   public async saveStationToDb(stationData: StationData): Promise<boolean> {
-    const { id, station, updated, link, ninetyFive, ninetyEight, diesel } = stationData;
+    const { id, station, updated, link, ninetyFive, ninetyEight, diesel, coordinates } = stationData;
     const params = {
       TableName: this.tableName,
       Item: {
@@ -23,7 +23,11 @@ export default class DynamoDbConnector {
         link,
         ninetyFive,
         ninetyEight,
-        diesel
+        diesel,
+        ...(coordinates && {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude
+        })
       }
     };
     await this._client

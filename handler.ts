@@ -2,6 +2,7 @@ import DynamoDbConnector from './src/db/dynamoDbConnector';
 import { FuelScraper } from './src/fuelScraper';
 import { LambdaResponse } from './src/model/lambdaResponse';
 import { StationData } from './src/model/station';
+import { v4 as uuidv4, v4 } from 'uuid';
 
 const url = 'https://www.polttoaine.net';
 const fuelScraper = new FuelScraper(url);
@@ -42,7 +43,14 @@ const getLocationPrices = async (event: any, _context: any, _callback: any): Pro
 
 const saveStation = async (event: any, _context: any, _callback: any): Promise<LambdaResponse> => {
   try {
-    const stationData = event as StationData;
+    const coordinates = await fuelScraper.getCoordinatesFromMap(event.link);
+    const id = event.id ?? v4();
+    const stationData = {
+      ...event,
+      id,
+      coordinates
+    } as StationData;
+    console.log('station: ', stationData);
     const dbConnector = new DynamoDbConnector(dynamoDbTable);
     const result = await dbConnector.saveStationToDb(stationData);
     if (result) {
@@ -53,7 +61,7 @@ const saveStation = async (event: any, _context: any, _callback: any): Promise<L
     } else {
       return {
         statusCode: 500,
-        body: JSON.stringify('failure to save into db')
+        body: JSON.stringify('Failure to save into db')
       };
     }
   } catch (err) {

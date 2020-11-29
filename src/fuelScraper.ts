@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { CityLocations } from './model/cityLocations';
 import { LocationStations, StationData } from './model/station';
 import { SimpleCoordinates } from './model/simpleCoords';
@@ -64,6 +64,29 @@ export class FuelScraper {
     };
   }
 
+  public async getCoordinatesFromMap(mapLink: string): Promise<SimpleCoordinates> {
+    if (mapLink === '-') {
+      return undefined;
+    }
+    const response = await axios.request({
+      method: 'GET',
+      url: `${this.url}/${mapLink}`,
+      responseType: 'text'
+    });
+    const cheerioStatic: cheerio.Root = cheerio.load(response.data);
+    const jsObject = cheerioStatic('.centerCol').find('script').attr('type', 'text/javascript');
+    const scriptText = jsObject[3].children[0].data;
+    const coordsArray = scriptText
+      .split(/google.maps.LatLng/)[1]
+      .match(/\(([^)]+)\)/)[1]
+      .split(', ');
+    return {
+      id: '',
+      latitude: coordsArray[0],
+      longitude: coordsArray[1]
+    };
+  }
+
   private parseStationRow(cheerioStatic: cheerio.Root, element: cheerio.Element, currentYear: number): StationData {
     const currentRow = cheerioStatic(element);
     const rawDate = currentRow.find('.PvmTD');
@@ -85,14 +108,6 @@ export class FuelScraper {
       diesel
     };
     return st;
-  }
-
-  private async updateStationsWithCoordinates(stationsMap: Map<number, StationData>): Promise<StationData[]> {
-    const updatedMap = stationsMap;
-    const stationLinks = [...stationsMap.values()].map((st) => st.link.toString());
-    const promises = stationLinks.map((link) => this.getCoordinatesFromMap(link));
-    const updatedStations = await Promise.all(promises);
-    return [...updatedMap.values()];
   }
 
   private getStationId(mapLink: string): string {
@@ -118,25 +133,5 @@ export class FuelScraper {
     } else {
       return false;
     }
-  }
-
-  private async getCoordinatesFromMap(mapLink: string): Promise<SimpleCoordinates> {
-    const response = await axios.request({
-      method: 'GET',
-      url: `${this.url}/${mapLink}`,
-      responseType: 'text'
-    });
-    const cheerioStatic: cheerio.Root = cheerio.load(response.data);
-    const jsObject = cheerioStatic('.centerCol').find('script').attr('type', 'text/javascript');
-    const scriptText = jsObject[3].children[0].data;
-    const coordsArray = scriptText
-      .split(/google.maps.LatLng/)[1]
-      .match(/\(([^)]+)\)/)[1]
-      .split(', ');
-    return {
-      id: '',
-      latitude: coordsArray[0],
-      longitude: coordsArray[1]
-    };
   }
 }

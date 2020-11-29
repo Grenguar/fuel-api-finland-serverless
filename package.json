@@ -18,6 +18,7 @@
     "@types/jest": "^26.0.14",
     "@types/moxios": "^0.4.9",
     "@types/node": "^14.11.8",
+    "@types/uuid": "^8.3.0",
     "aws-sdk": "^2.686.0",
     "jest": "^26.5.3",
     "moxios": "^0.4.0",
